@@ -27,7 +27,7 @@ Project implication:
 
 ## Data Sources
 ### 1. Kaggle Dataset (Core Health + Climate Panel)
-Source file: `Kaggle Files/global_climate_health_impact_tracker_2015_2025.csv`
+Source file: [`Kaggle Dataset`](https://www.kaggle.com/code/enesfurkanmacit/global-climate-health-impact-analysis/input?select=global_climate_health_impact_tracker_2015_2025.csv)
 
 Brief overview:
 - 14,100 records, weekly frequency, Jan 2015 to Oct 2025.
@@ -35,11 +35,8 @@ Brief overview:
 - Includes climate indicators, air quality, health outcomes, and socioeconomic context.
 - Key target used in this app: `heat_related_admissions` (rate per 100,000 population).
 
-The Kaggle README with full field descriptions is available in:
-- `Kaggle Files/README_climate_health.md`
-
 ### 2. NASA POWER API (High-Resolution Environmental Enrichment)
-Source workflow: `Phase 2/Phase 2 Heat Related_Kaggle_Nasa Merge.ipynb`
+Source workflow: [`NASA API`](https://power.larc.nasa.gov/docs/services/api/)
 
 Brief overview:
 - Hourly NASA POWER variables were retrieved for each location and year.
@@ -47,7 +44,7 @@ Brief overview:
 - Hourly data was engineered into weekly features (for example average weekly temperature, max hourly temperature, extreme heat hours, aerosol summaries) and joined to Kaggle records by date and coordinates.
 
 ## Approach
-### 0. EDA Highlights (From Slide Charts)
+### 1. EDA Highlights
 Exploratory analysis was used to validate the problem framing before final model design. The chart workflow highlighted four patterns:
 - Rising anomalies over 2015-2024, indicating a shifting heat baseline.
 - More frequent high-burden admission weeks after 2020 versus earlier years.
@@ -56,7 +53,7 @@ Exploratory analysis was used to validate the problem framing before final model
 
 These EDA findings directly motivated a two-stage hurdle model and the inclusion of non-climate predictors.
 
-### 1. Historical Risk Profiling
+### 2. Historical Risk Profiling
 Using historical patterns, countries were grouped into risk tiers with KMeans clustering, based on:
 - Admission trend slope
 - High-event slope relative to local 90th percentile burden
@@ -65,17 +62,17 @@ Using historical patterns, countries were grouped into risk tiers with KMeans cl
 
 This output supports the app's historical dashboard and risk tier map.
 
-### 2. Two-Stage Hurdle Prediction Pipeline
+### 3. Two-Stage Hurdle Prediction Pipeline
 Implemented in `climate_models.ipynb`:
 - Stage 1 (Classifier): predicts whether a heat-admission event occurs (zero vs non-zero week).
 - Stage 2 (Regressor): predicts admission magnitude when an event is expected.
 
 Model candidates were compared, and serialized models were exported for app inference.
 
-### 2a. Model Selection Snapshot (Why LightGBM for Deployment)
+### 3a. Model Selection Snapshot (Why LightGBM for Deployment)
 Multiple Stage 2 regressors were benchmarked on a 2015-2023 train and 2024 test split. While CatBoost achieved the highest combined test R2, LightGBM was selected for the deployed app because it provided a stronger train-test balance with lower overfit signals.
 
-Key comparison highlights from `New Phase Apr'26/models_comparison_v2.csv`:
+Key comparison highlights from `climate_models.ipynb`:
 - CatBoost: Combined Train R2 = 0.9323, Combined Test R2 = 0.8263, Discrepancy = 0.1061
 - LightGBM: Combined Train R2 = 0.9094, Combined Test R2 = 0.8247, Discrepancy = 0.0847
 
@@ -84,7 +81,7 @@ Why this mattered:
 - LightGBM had lower train-test discrepancy on the combined hurdle output.
 - LightGBM also showed lower Stage 2 train-test discrepancy than CatBoost (0.1600 vs 0.2018), supporting more stable generalization.
 
-### 3. Streamlit Proof of Concept App
+### 4. Streamlit Proof of Concept App
 Final app implementation:
 - `heatwatch_app.py`
 
